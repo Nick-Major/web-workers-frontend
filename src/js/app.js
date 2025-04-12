@@ -1,8 +1,8 @@
 import NewsFeed from "./newsFeed";
 import newsFeed from "./newsFeed";
 
-const container = document.querySelector('.root');
+const root = document.querySelector('.root');
 
-const newsFeed = NewsFeed(container);
+const app = new NewsFeed(root);
 
-newsFeed.init();
+app.init();

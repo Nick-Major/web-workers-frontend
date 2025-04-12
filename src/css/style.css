@@ -10,14 +10,18 @@ body {
 }
 
 .root {
-    padding: 5%;
-    font-size: 12px;
     border: 1px solid black;
-    border-radius: 50%;
+    border-radius: 5px;
+    margin: 5%;
 }
 
 .dashboard {
     display: flex;
+    font-size: 12px;
+    height: 5vh;
+    padding: 15px;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .title {
@@ -28,4 +32,12 @@ body {
     min-width: 60px;
     border: none;
     text-decoration: underline;
+    background-color: inherit;
+    font-size: 20px;
+    color: grey;
+}
+
+.news-container {
+    width: 100%;
+    height: 80vh;
 }
