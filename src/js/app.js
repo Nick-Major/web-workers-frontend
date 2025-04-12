@@ -1,5 +1,4 @@
 import NewsFeed from "./newsFeed";
-import newsFeed from "./newsFeed";
 
 const root = document.querySelector('.root');
 

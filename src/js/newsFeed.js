@@ -35,10 +35,40 @@ export default class NewsFeed {
         this.container.append(newsContainer);
     }
 
+    // loadNews() {
+    //     createRequest()
+    //         .then(news => console.log('Received news:', news))
+    //         .then(news => news.forEach(item => {
+    //             this.renderNews(item);
+    //         }))
+    //         .catch(error => console.error('Request failed:', error));
+    // }
+
     loadNews() {
         createRequest()
-            .then(news => console.log('Received news:', news))
+            .then(news => {
+                console.log('Received news:', news);
+                news.forEach(item => {
+                    this.renderNews(item);
+                });
+            })
             .catch(error => console.error('Request failed:', error));
+    }
+
+    renderNews(item) {
+        const newsContainer = this.container.querySelector('.news-container');
+
+        const newsItem = document.createElement('article');
+
+        newsItem.innerHTML = `
+            <h2 class="news-title">${item.header}</h2>
+            <div class="news-content">
+                <img class="news-img" src="${item.caption}" alt="${item.header}">
+                <div class="news-content">${item.content}</div>
+            </div>
+        `;
+
+        newsContainer.appendChild(newsItem);
     }
 
 
