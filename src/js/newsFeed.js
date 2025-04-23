@@ -56,50 +56,78 @@ export default class NewsFeed {
     newsContainer.appendChild(skeleton);
   }
 
-  addEventListeners() {
-    const updateBtn = document.querySelector('.update-btn');
-
-    updateBtn.addEventListener('click', (event) => {
-      createRequest();
-    })
-  }
-
   async loadNews() {
     try {
-      // Очищаем контейнер перед загрузкой новых данных
-      this.container.querySelector('.news-container').innerHTML = '';
+      // Удаляем старые данные, но оставляем скелетон
+      const newsContainer = this.container.querySelector('.news-container');
+      const skeleton = newsContainer.querySelector('.skeleton-container');
+      Array.from(newsContainer.children).forEach((child) => {
+        if (!child.classList.contains('skeleton-container')) {
+          child.remove();
+        }
+      });
 
-      // Удаляем скелетон перед загрузкой данных
-      const skeleton = this.container.querySelector('.skeleton-container');
-      if (skeleton) {
-        skeleton.remove();
+      // Минимальное время показа скелетона (5 секунд)
+      const minLoadingTime = 5000;
+      const startTime = Date.now();
+
+      // Параллельно загружаем данные и ждём минимальное время
+      const [freshNews] = await Promise.all([
+        this.fetchData(),
+        new Promise((resolve) => setTimeout(resolve, minLoadingTime)),
+      ]);
+
+      // Гарантируем минимум 5 секунд показа
+      const elapsed = Date.now() - startTime;
+      if (elapsed < minLoadingTime) {
+        await new Promise((resolve) => setTimeout(resolve, minLoadingTime - elapsed));
       }
-      
-      // Пытаемся получить данные из кеша
+
+      // Убираем скелетон и показываем данные
+      if (skeleton) skeleton.remove();
+      await this.renderNews(freshNews);
+    } catch (error) {
+      console.error('Error loading news:', error);
+      this.showError('Не удалось загрузить новости');
+      // Оставляем скелетон при ошибке
+    }
+  }
+
+  async fetchData() {
+    try {
       const cachedResponse = await caches.match('/news');
       if (cachedResponse) {
         const news = await cachedResponse.json();
         await this.renderFromCache(news);
       }
-
-      // Загружаем свежие данные
-      const freshNews = await createRequest();
-      await this.renderNews(freshNews);
-      
+      return await createRequest();
     } catch (error) {
-      console.error('Error loading news:', error);
-      this.showError('Не удалось загрузить новости');
-      this.showSkeleton();
+      throw error;
     }
   }
 
-  async renderFromCache(news) {
+  async renderNews(news) {
     for (const item of news) {
       await this.renderNewsItem(item);
     }
   }
 
-  async renderNews(news) {
+  showError(message) {
+    const errorElement = document.createElement('div');
+    errorElement.classList.add('error-message');
+    errorElement.textContent = message;
+    this.container.querySelector('.news-container').appendChild(errorElement);
+  }
+
+  addEventListeners() {
+    const updateBtn = document.querySelector('.update-btn');
+
+    updateBtn.addEventListener('click', (event) => {
+      createRequest();
+    });
+  }
+
+  async renderFromCache(news) {
     for (const item of news) {
       await this.renderNewsItem(item);
     }
@@ -115,7 +143,7 @@ export default class NewsFeed {
       try {
         const cache = await caches.open('animal-images');
         const cachedResponse = await cache.match(imageUrl);
-        
+
         if (cachedResponse) {
           const blob = await cachedResponse.blob();
           imgUrl = URL.createObjectURL(blob);
@@ -123,7 +151,7 @@ export default class NewsFeed {
         } else {
           // Если нет в кэше, загружаем с сервера
           const response = await fetch(imageUrl);
-          
+
           if (response.ok) {
             // Кэшируем новое изображение
             await cache.put(imageUrl, response.clone());
@@ -151,10 +179,9 @@ export default class NewsFeed {
       try {
         const cache = await caches.open('animal-images');
         const fallbackResponse = await cache.match('/images/fallback.jpg');
-        const finalUrl = fallbackResponse ? 
-          URL.createObjectURL(await fallbackResponse.blob()) : 
-          'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGV4dCB4PSIxMCIgeT0iNTAiIGZpbGw9IiMwMDAiPk5vIGltYWdlPC90ZXh0Pjwvc3ZnPg==';
-        
+        const finalUrl = fallbackResponse
+          ? URL.createObjectURL(await fallbackResponse.blob())
+          : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGV4dCB4PSIxMCIgeT0iNTAiIGZpbGw9IiMwMDAiPk5vIGltYWdlPC90ZXh0Pjwvc3ZnPg==';
         this.createNewsElement(item, finalUrl);
       } catch (finalError) {
         console.error('Не удалось загрузить даже fallback:', finalError);
@@ -176,17 +203,10 @@ export default class NewsFeed {
     this.container.querySelector('.news-container').appendChild(newsItem);
   }
 
-  showError(message) {
-    const errorElement = document.createElement('div');
-    errorElement.classList.add('error-message');
-    errorElement.textContent = message;
-    this.container.querySelector('.news-container').appendChild(errorElement);
-  }
-
   showSkeleton() {
     const newsContainer = this.container.querySelector('.news-container');
     newsContainer.innerHTML = '';
-    
+
     const skeleton = document.createElement('div');
     skeleton.classList.add('skeleton-container');
     skeleton.innerHTML = `
@@ -206,7 +226,7 @@ export default class NewsFeed {
         <div class="skeleton-text"></div>
       </div>
     `;
-    
+
     newsContainer.appendChild(skeleton);
   }
 }

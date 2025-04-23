@@ -15,6 +15,7 @@ body {
   border: 1px solid black;
   border-radius: 5px;
   min-width: 700px;
+  min-height: 80vh;
   margin: 5%;
   box-sizing: border-box;
 }
@@ -67,8 +68,17 @@ body {
   height: auto;
 }
 
-skeleton-container {
+.skeleton-container {
   width: 100%;
+  animation: fadeOut 0.5s forwards;
+  animation-delay: 5s;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    display: none;
+  }
 }
 
 .skeleton-title {
@@ -103,7 +113,8 @@ skeleton-container {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

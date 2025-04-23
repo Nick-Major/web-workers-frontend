@@ -15,7 +15,7 @@ module.exports = {
     port: 8080,
     hot: true,
     historyApiFallback: true,
-    
+
     static: {
       directory: path.join(__dirname, 'dist'),
       serveIndex: true, // Показывать индекс при отсутствии файла
@@ -33,14 +33,14 @@ module.exports = {
         changeOrigin: true,
         secure: false,
         headers: {
-          Connection: 'keep-alive' // Для стабильности при искусственной задержке
+          Connection: 'keep-alive', // Для стабильности при искусственной задержке
         },
         onProxyReq(proxyReq) {
           if (process.env.NODE_ENV === 'development') {
             console.log(`[DEV] Проксируем запрос к: ${proxyReq.path}`);
           }
-        }
-      }
+        },
+      },
     ],
 
     client: {
@@ -48,16 +48,13 @@ module.exports = {
         errors: true,
         warnings: false,
       }, // Показывать ошибки компиляции в браузере
-      logging: 'warn' // Уровень логов в браузере
-    }
+      logging: 'warn', // Уровень логов в браузере
+    },
   },
 
   optimization: {
     minimize: true,
-    minimizer: [
-      new TerserPlugin(),
-      new CssMinimizerPlugin(),
-    ],
+    minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
     splitChunks: {
       chunks: 'all',
     },
@@ -107,7 +104,7 @@ module.exports = {
       filename: 'index.html',
       inject: true,
     }),
-    
+
     new MiniCssExtractPlugin({
       filename: '[name].[contenthash].css',
     }),
@@ -115,16 +112,18 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
-        API_URL: JSON.stringify(process.env.API_URL || 'http://localhost:3000')
-      }
+        API_URL: JSON.stringify(process.env.API_URL || 'http://localhost:3000'),
+      },
     }),
-    
-    ...(isProduction ? [
-      new InjectManifest({
-        swSrc: path.resolve(__dirname, 'src/sw.js'),
-        swDest: 'sw.js',
-        exclude: [/\.map$/, /^manifest.*\.js$/],
-      })
-    ] : []),
+
+    ...(isProduction
+      ? [
+          new InjectManifest({
+            swSrc: path.resolve(__dirname, 'src/sw.js'),
+            swDest: 'sw.js',
+            exclude: [/\.map$/, /^manifest.*\.js$/],
+          }),
+        ]
+      : []),
   ],
 };
